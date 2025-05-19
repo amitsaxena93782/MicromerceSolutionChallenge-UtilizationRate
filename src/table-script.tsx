@@ -23,16 +23,37 @@ import type { SourceDataType, TableDataType } from "./types";
 const tableData: TableDataType[] = (
   sourceData as unknown as SourceDataType[]
 ).map((dataRow, index) => {
-  const person = `${dataRow?.employees?.firstname} - ...`;
+  const person = `${dataRow?.employees?.firstname} ${dataRow?.employees?.lastname}`;
+
+  const util = dataRow?.employees?.workforceUtilisation;
+  const y2d = util?.utilisationRateYearToDate;
+  const past12Months = util?.utilisationRateLastTwelveMonths;
+
+  // For extracting the utilisation rate by month
+  const get_utilByMonth = (month: string) => {
+    return util?.lastThreeMonthsIndividually?.find(
+      (util) => util?.month === month
+    )?.utilisationRate;
+  }
+
+  // A utility funtion for formatting the util rate
+  const formatPercent = (value?: string | null) => {
+    const num = Number(value);
+    return isNaN(num) ? "..." : (num * 100).toFixed(1) + "%";
+  };
+  
+  // Extracting the last month cost
+  // const lastCostEntry = dataRow?.employees?.costsByMonth?.costsByMonth?.at(-1);
+  console.log(dataRow?.employees?.costsByMonth?.potentialEarningsByMonth?.at(-1)?.costs);
 
   const row: TableDataType = {
     person: `${person}`,
-    past12Months: `past12Months ${index} placeholder`,
-    y2d: `y2d ${index} placeholder`,
-    may: `may ${index} placeholder`,
-    june: `june ${index} placeholder`,
-    july: `july ${index} placeholder`,
-    netEarningsPrevMonth: `netEarningsPrevMonth ${index} placeholder`,
+    past12Months: formatPercent(past12Months),
+    y2d: formatPercent(y2d),
+    june: formatPercent(get_utilByMonth("June")),
+    july: formatPercent(get_utilByMonth("July")),
+    august: formatPercent(get_utilByMonth("August")),
+    netEarningsPrevMonth: "netEarningsPrevMonth",
   };
 
   return row;
@@ -54,16 +75,16 @@ const Example = () => {
         header: "Y2D",
       },
       {
-        accessorKey: "may",
-        header: "May",
-      },
-      {
         accessorKey: "june",
         header: "June",
       },
       {
         accessorKey: "july",
         header: "July",
+      },
+      {
+        accessorKey: "august",
+        header: "August",
       },
       {
         accessorKey: "netEarningsPrevMonth",
